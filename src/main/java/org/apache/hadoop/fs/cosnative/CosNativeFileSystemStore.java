@@ -336,7 +336,8 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
             delObjectStr = callCosSdkWithRetry(request);
         }
         JSONObject delObjectJson = new JSONObject(delObjectStr);
-        if (delObjectJson.getInt("code") != 0) {
+        // -197 表示文件或目录不存在
+        if (delObjectJson.getInt("code") != 0 && delObjectJson.getInt("code") != -197) {
             String errMsg =
                     String.format("del object faild, cos key: %s, ret: %s", key, delObjectStr);
             LOG.error(errMsg);

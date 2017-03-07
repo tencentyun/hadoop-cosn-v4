@@ -105,6 +105,11 @@ public class NativeCosFileSystem extends FileSystem {
                 throw new EOFException("Cannot read closed stream");
             }
             
+            // 空文件处理
+            if (this.fileSize == 0) {
+            	return 0;
+            }
+            
             if (pos >= this.fileSize) {
                 return -1;
             }
@@ -147,6 +152,11 @@ public class NativeCosFileSystem extends FileSystem {
         public synchronized int read(byte[] b, int off, int len) throws IOException {
             if (in == null) {
                 throw new EOFException("Cannot read closed stream");
+            }
+            
+            // 空文件处理
+            if (this.fileSize == 0) {
+            	return 0;
             }
             
             if (pos >= this.fileSize) {
@@ -241,7 +251,7 @@ public class NativeCosFileSystem extends FileSystem {
             if (newpos < 0) {
                 throw new EOFException(FSExceptionMessages.NEGATIVE_SEEK);
             }
-            if (newpos >= fileSize) {
+            if (newpos > fileSize) {
                 String err_msg = String.format("invalid pos, pos is bigger than filesize! pos: %s, file_size: %s", newpos, fileSize);
                 LOG.error(err_msg);
                 throw new IOException(err_msg);
