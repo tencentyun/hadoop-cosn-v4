@@ -79,7 +79,7 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
     private ClientConfig initCosConfig(Configuration conf) throws IOException {
         String region = conf.get("fs.cos.userinfo.region", "gz");
 
-        boolean useCDN = conf.getBoolean("fs.cos.userinfo.useCDN", true);
+        boolean useCDN = conf.getBoolean("fs.cos.userinfo.useCDN", false);
         boolean useHttps = conf.getBoolean("fs.cos.userinfo.usehttps", false);
 
         ClientConfig config = new ClientConfig();

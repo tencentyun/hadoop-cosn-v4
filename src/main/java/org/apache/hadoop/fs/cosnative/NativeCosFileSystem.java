@@ -192,6 +192,9 @@ public class NativeCosFileSystem extends FileSystem {
 
         @Override
         public synchronized void close() throws IOException {
+            if (in == null) {
+                return;
+            }
         	try {
         		in.close();
         	} catch (IOException e) {
@@ -741,7 +744,7 @@ public class NativeCosFileSystem extends FileSystem {
         String localtempDirPath = this.getConf().get("fs.cos.buffer.dir", "/tmp");
         File localTempDir = new File(localtempDirPath);
         File localTempBlockFile = File.createTempFile("cos", "local_block_cache", localTempDir);
-        long blockSize = this.getConf().getLong("fs.cos.local_block_size", 64 * 1024 * 1024); // 默认 64MB block
+        long blockSize = this.getConf().getLong("fs.cos.local_block_size", 1024 * 1024); // 默认 1MB block
         store.retrieveBlock(key, 0, blockSize, localTempBlockFile.getAbsolutePath());
         RandomAccessFile raf = new RandomAccessFile(localTempBlockFile, "r");
         return new FSDataInputStream(new BufferedFSInputStream(
