@@ -75,6 +75,18 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
         Credentials cosCred = new Credentials(appId, secretId, secretKey);
         return cosCred;
     }
+    
+    // 是否为标识文件不存在的错误码
+    private boolean FileNotExistsCode(int code) {
+    	switch (code) {
+    	case -197: /* 文件不存在  ERROR_CMD_FILE_NOTEXIST */
+    	case -166: /* 索引不存在  ERROR_CMD_COS_INDEX_ERROR*/
+    	case -144: /* 索引不存在 ERROR_CMD_INDEX_NO_EXIST */
+    		return true;
+    	default:
+    		return false;
+    	}
+    }
 
     private ClientConfig initCosConfig(Configuration conf) throws IOException {
         String region = conf.get("fs.cos.userinfo.region", "gz");
@@ -167,8 +179,15 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
                 long fileSize = statDataJson.getLong("filesize");
                 FileMetadata fileMetadata = new FileMetadata(key, fileSize, mtime, true);
                 return fileMetadata;
-            }
+            } 
             LOG.debug("retive file MetaData key:{}, server ret:{}", key, statFileRet);
+            if (!FileNotExistsCode(statFileJson.getInt("code"))) {
+            	// 如果是server有异常，抛出异常，而不是返回文件不存在
+            	String errorMsg = String.format("retrieve file Metadata file failure, key:%s, ret:%s", key, statFileRet);
+            	LOG.error(errorMsg);
+            	handleException(new Exception(errorMsg), key);
+            }
+            
         }
         // judge if the key is directory
         key = key + PATH_DELIMITER;
@@ -183,6 +202,11 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
             return fileMetadata;
         }
         LOG.debug("retive dir MetaData key:{}, server ret:{}", key, statFolderRet);
+        if (!FileNotExistsCode(statFolderJson.getInt("code"))) {
+        	// 如果是server有异常，抛出异常，而不是返回文件不存在
+        	String errorMsg = String.format("retrieve dir Metadata file failure, key:%s, ret:%s", key, statFolderRet);
+        	handleException(new Exception(errorMsg), key);
+        }
         return null;
     }
 
