@@ -314,7 +314,7 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
         }
         JSONObject listDataJson = listResultJson.getJSONObject("data");
         JSONArray infosArry = listDataJson.getJSONArray("infos");
-        ArrayList<String> commonPrefixsArry = new ArrayList<>();
+        ArrayList<FileMetadata> commonPrefixsArry = new ArrayList<>();
         ArrayList<FileMetadata> fileMetadataArry = new ArrayList<>();
 
         for (int i = 0; i < infosArry.length(); i++) {
@@ -326,7 +326,8 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
                 fileMetadataArry.add(new FileMetadata(filePath, fileLen, mtime, true));
             } else {
                 String folderPath = listFolderPath + infosMemberJson.getString("name");
-                commonPrefixsArry.add(folderPath);
+                long mtime = infosMemberJson.getLong("mtime") * 1000;
+                commonPrefixsArry.add(new FileMetadata(folderPath, 0, mtime, false));
             }
         }
 
@@ -334,7 +335,7 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
         for (int i = 0; i < fileMetadataArry.size(); ++i) {
             fileMetadata[i] = fileMetadataArry.get(i);
         }
-        String[] commonPrefixs = new String[commonPrefixsArry.size()];
+        FileMetadata[] commonPrefixs = new FileMetadata[commonPrefixsArry.size()];
         for (int i = 0; i < commonPrefixsArry.size(); ++i) {
             commonPrefixs[i] = commonPrefixsArry.get(i);
         }

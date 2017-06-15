@@ -104,10 +104,10 @@ public class NativeCosFileSystem extends FileSystem {
             if (in == null) {
                 throw new EOFException("Cannot read closed stream");
             }
-            
+
             // 空文件处理
             if (this.fileSize == 0) {
-            	return 0;
+            	return -1;
             }
             
             if (pos >= this.fileSize) {
@@ -156,7 +156,7 @@ public class NativeCosFileSystem extends FileSystem {
             
             // 空文件处理
             if (this.fileSize == 0) {
-            	return 0;
+            	return -1;
             }
             
             if (pos >= this.fileSize) {
@@ -544,8 +544,8 @@ public class NativeCosFileSystem extends FileSystem {
                 for (FileMetadata file : listing.getFiles()) {
                     store.delete(file.getKey());
                 }
-                for (String commonprefix : listing.getCommonPrefixes()) {
-                    store.delete(commonprefix);
+                for (FileMetadata commonprefix : listing.getCommonPrefixes()) {
+                    store.delete(commonprefix.getKey());
                 }
                 priorLastKey = listing.getPriorLastKey();
             } while (priorLastKey != null);
@@ -588,7 +588,7 @@ public class NativeCosFileSystem extends FileSystem {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("getFileStatus returning 'dir' for key '" + key + "'");
                 }
-                return newDirectory(absolutePath);
+                return newDirectory(meta, absolutePath);
             }
         }
 
@@ -665,13 +665,13 @@ public class NativeCosFileSystem extends FileSystem {
                     status.add(newFile(fileMetadata, subpath));
                 }
             }
-            for (String commonPrefix : listing.getCommonPrefixes()) {
-                Path subpath = keyToPath(commonPrefix);
+            for (FileMetadata commonPrefix : listing.getCommonPrefixes()) {
+                Path subpath = keyToPath(commonPrefix.getKey());
                 LOG.debug("commprefix, subpath" + subpath);
                 String relativePath = pathUri.relativize(subpath.toUri()).getPath();
                 LOG.debug("commprefix, relativePath:" + relativePath);
                 LOG.debug("full path:" + new Path(absolutePath, relativePath));
-                status.add(newDirectory(new Path(absolutePath, relativePath)));
+                status.add(newDirectory(commonPrefix, new Path(absolutePath, relativePath)));
             }
             priorLastKey = listing.getPriorLastKey();
         } while (priorLastKey != null);
@@ -688,6 +688,16 @@ public class NativeCosFileSystem extends FileSystem {
     private FileStatus newDirectory(Path path) {
         return new FileStatus(0, true, 1, 0, 0, 0, null, this.owner, this.group,
                 path.makeQualified(this.getUri(), this.getWorkingDirectory()));
+    }
+    
+    private FileStatus newDirectory(FileMetadata meta, Path path) {
+    	if (meta == null) {
+    		return newDirectory(path);
+    	}
+    	FileStatus status = new FileStatus(0, true, 1, 0, meta.getLastModified(), 0, null, this.owner, this.group,
+                path.makeQualified(this.getUri(), this.getWorkingDirectory()));
+    	LOG.debug("status: " + status.toString());
+        return status;
     }
 
     @Override
@@ -839,10 +849,10 @@ public class NativeCosFileSystem extends FileSystem {
                     keysToDelete.add(file.getKey());
                     store.copy(file.getKey(), dstKey + file.getKey().substring(srcKey.length()));
                 }
-                for (String commonPrefix : listing.getCommonPrefixes()) {
-                    keysToDelete.add(commonPrefix);
+                for (FileMetadata commonPrefix : listing.getCommonPrefixes()) {
+                    keysToDelete.add(commonPrefix.getKey());
                     try {
-                        store.storeEmptyFile(dstKey + commonPrefix.substring(srcKey.length()));
+                        store.storeEmptyFile(dstKey + commonPrefix.getKey().substring(srcKey.length()));
                     } catch (Exception e) {
                         LOG.debug(e.toString());
                     }

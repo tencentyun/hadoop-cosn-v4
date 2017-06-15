@@ -40,10 +40,10 @@ class PartialListing {
   
   private final String priorLastKey;
   private final FileMetadata[] files;
-  private final String[] commonPrefixes;
+  private final FileMetadata[] commonPrefixes;
   
   public PartialListing(String priorLastKey, FileMetadata[] files,
-      String[] commonPrefixes) {
+		  FileMetadata[] commonPrefixes) {
     this.priorLastKey = priorLastKey;
     this.files = files;
     this.commonPrefixes = commonPrefixes;
@@ -53,7 +53,7 @@ class PartialListing {
     return files;
   }
 
-  public String[] getCommonPrefixes() {
+  public FileMetadata[] getCommonPrefixes() {
     return commonPrefixes;
   }
 
