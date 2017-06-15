@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -504,6 +505,7 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
             case -3: /* server_exception */
             case -4: /* unknown_exception */
             case -66: /* ERROR_PROXY_NETWORK */
+            case -71: /* Freq Control */
             case -97: /* auth_failed */
             case -98: /* auth_failed */
             case -181: /* ERROR_CMD_COS_ERROR */
@@ -560,8 +562,9 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
             String errMsg = "Call cos sdk failure, call method : " + sdkMethod + "request: "
                     + request + ", ret: " + callSdkRet + ", retry_time:" + i;
             LOG.info(errMsg);
+            long sleep_ms = new Random().nextInt(100) + 50;
             try {
-                Thread.sleep(100);
+                Thread.sleep(sleep_ms);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
