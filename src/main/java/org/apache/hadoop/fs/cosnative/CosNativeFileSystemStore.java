@@ -152,13 +152,13 @@ class CosNativeFileSystemStore implements NativeFileSystemStore {
         JSONObject createFolderJson = new JSONObject(createFolderRet);
         if (createFolderJson.getInt("code") != 0) {
             String debugMsg =
-                    String.format("storeEmptyFile(create folder) faild, cos key: %s, ret: %s", key,
+                    String.format("storeEmptyFile(create folder) failed, cos key: %s, ret: %s", key,
                             createFolderRet);
             LOG.debug(debugMsg); // 改成debug 是因为创建父目录的时候 常常会有路径冲突的现象
             handleException(new Exception(debugMsg), key);
         } else {
             String debugMsg =
-                    String.format("storeEmptyFile(create folder) SUCCESS, cos key: %s, ret: %s",
+                    String.format("storeEmptyFile(create folder) SUCCESS, cos key: %s",
                             key, createFolderRet);
             LOG.debug(debugMsg);
         }
